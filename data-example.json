@@ -1,0 +1,11 @@
+{
+    "subnets": [
+        {
+            "name": "subnet-1",
+            "cidr": ""
+        },
+    ],
+    "nodes": [
+        
+    ]
+}

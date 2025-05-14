@@ -1,0 +1,32 @@
+bq734y:
+  hostname: dzn01u00002
+  ip: 186.49.150.2
+  subnet: 186.49.150.0/24
+ccxg4g:
+  hostname: dzn01ucontroller00004
+  ip: 78.194.29.68
+  subnet: 78.194.29.0/24
+m6atra:
+  hostname: dzn01ucontroller00003
+  ip: 78.194.29.223
+  subnet: 78.194.29.0/24
+mehknp:
+  hostname: dzn01u00003
+  ip: 186.49.150.155
+  subnet: 186.49.150.0/24
+q8sn8b:
+  hostname: dzn01ucontroller00005
+  ip: 78.194.29.117
+  subnet: 78.194.29.0/24
+rqw3ae:
+  hostname: dzn01u00001
+  ip: None
+  subnet: 78.194.29.0/24
+sfs3cn:
+  hostname: dzn01ucontroller00001
+  ip: 78.194.29.33
+  subnet: 78.194.29.0/24
+x6atp7:
+  hostname: dzn01ucontroller00002
+  ip: 78.194.29.81
+  subnet: 78.194.29.0/24

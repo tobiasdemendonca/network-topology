@@ -130,6 +130,13 @@ def load_yaml():
                 {
                     "id": node.name_without_spaces,
                     "name": node.name,
+                    "interfaces": [
+                        {
+                            "name": interface.name,
+                            "ip": interface.ipaddress,
+                        }
+                        for interface in node.interfaces
+                    ],
                     "type": "node",
                     "group": 2,
                 }

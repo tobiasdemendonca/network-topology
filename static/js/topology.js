@@ -148,9 +148,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     .duration(200)
                     .style('opacity', .9);
                     
-                let tooltipText = `Name: ${d.name}`;
+                let tooltipText = `<strong>Name</strong><br>${d.name}`;
                 if (d.type === 'subnet') {
-                    tooltipText += `<br>CIDR: ${d.cidr}`;
+                    tooltipText += `<br><br><strong>CIDR</strong><br>${d.cidr}`;
+                } else if (d.type === 'node') {
+                    tooltipText += `<br><br><strong>Interfaces</strong>`;
+                    d.interfaces.forEach(intf => {
+                        tooltipText += `<br>${intf.name}: ${intf.ip}`;
+                    });
                 }
                 
                 tooltip.html(tooltipText)

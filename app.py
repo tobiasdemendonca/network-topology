@@ -93,20 +93,29 @@ def load_yaml():
         nodes = []
 
         for key, host_data in yaml_data.items():
-            subnet_cidr = host_data.get("subnet")
-            if subnet_cidr and subnet_cidr not in subnets_dict:
-                subnet_name = f"Subnet {len(subnets_dict) + 1}"
-                subnets_dict[subnet_cidr] = Subnet(name=subnet_name, cidr=subnet_cidr)
+            subnets = host_data.get("subnets", [])
+            ips = host_data.get("ips", [])
+            if len(subnets) != len(ips):
+                return jsonify({"error": "Mismatch between subnets and IPs"}), 400
 
-            if subnet_cidr:
-                subnet = subnets_dict[subnet_cidr]
-                interface = NetworkInterface(
-                    name="eth0", ipaddress=host_data.get("ip") or "N/A", subnet=subnet
+            for subnet_cidr, ip_address in zip(subnets, ips):
+                if subnet_cidr not in subnets_dict:
+                    subnet_name = f"Subnet {len(subnets_dict) + 1}"
+                    subnets_dict[subnet_cidr] = Subnet(
+                        name=subnet_name, cidr=subnet_cidr
+                    )
+
+            interfaces = []
+            for subnet_cidr, ip_addr in zip(subnets, ips):
+                iface = NetworkInterface(
+                    name="",
+                    ipaddress=ip_addr or "N/A",
+                    subnet=subnets_dict[subnet_cidr],
                 )
-                node = Node(
-                    name=host_data.get("hostname") or key, interfaces=[interface]
-                )
-                nodes.append(node)
+                interfaces.append(iface)
+
+            node = Node(name=host_data.get("hostname") or key, interfaces=interfaces)
+            nodes.append(node)
 
         network = Network(nodes=nodes, subnets=list(subnets_dict.values()))
 

@@ -1,5 +1,7 @@
 from __future__ import annotations
+
 import json
+
 
 class NetworkInterface: 
     def __init__(self, name: str, ipaddress: str, subnet: Subnet) -> None: 
@@ -30,10 +32,13 @@ class Subnet:
     @property
     def name_without_spaces(self) -> str:
         return self.name.replace(" ", "_")
-    
+
+    def __hash__(self) -> int:
+        return hash((self.name, self.cidr))
+
     def __repr__(self) -> str:
         return f"Subnet(name={self.name}, cidr={self.cidr})"
-    
+
 class Network:
     def __init__(self, nodes: list[Node], subnets: list[Subnet]) -> None: 
         self.nodes = nodes
@@ -70,7 +75,7 @@ class Outputer:
             out += '\n'
             
         return out
-        
+
 
 def main():
     
@@ -98,7 +103,6 @@ def main():
     #     network = Network.from_json(data)
     #     outputer = Outputer()
     #     outputer.output(network)
-    
+
 if __name__ == "__main__":
     main()
-    

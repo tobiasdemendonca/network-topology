@@ -42,6 +42,27 @@ document.addEventListener('DOMContentLoaded', function() {
         .attr('fill', '#999')
         .style('stroke', 'none');
     
+    // Create a pattern for subnet nodes with white background
+    const subnetPattern = defs.append('pattern')
+        .attr('id', 'subnet-pattern')
+        .attr('patternUnits', 'objectBoundingBox')
+        .attr('width', 1)
+        .attr('height', 1);
+
+    // Add white background rectangle (covers the entire circle)
+    subnetPattern.append('rect')
+        .attr('width', 100)
+        .attr('height', 100)
+        .attr('fill', 'white');
+
+    // Add the image on top with centering offsets
+    subnetPattern.append('image')
+        .attr('xlink:href', '/static/images/cloud.svg')
+        .attr('width', 45)  // Slightly smaller than the background
+        .attr('height', 45)
+        .attr('x', 12,5)  // Center horizontally: (30-25)/2 = 2.5
+        .attr('y', 12.5);  // Center vertically: (30-25)/2 = 2.5
+
     // Set up zoom behavior
     function setupZoom() {
         zoom = d3.zoom()
@@ -87,7 +108,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         d3.selectAll('.node-label')
             .attr('x', d => d.x)
-            .attr('y', d => d.y + 30);
+            .attr('y', d => {
+            // Use a larger Y-offset for subnet nodes
+            return d.type === 'subnet' ? d.y + 50 : d.y + 30;
+        });
     }
     
     // Create tooltip for hover information
@@ -138,8 +162,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 const nodeType = d.type === 'node' ? 'machine' : d.type;
                 return `node ${nodeType}`;
             })
-            .attr('r', 15)
-            .style("fill", d => d.fill_color)
+            .attr('r', function(d) {
+                if (d.type === 'subnet') {
+                    return 35;
+                } else {
+                    return 15;
+                }
+            })
+            .style("fill", function (d) {
+                if (d.type === 'subnet') {
+                    return 'url(#subnet-pattern)';
+                } else {
+                    return d.fill_color;
+                }
+            })
             .on('click', function(event, d) {
                 // Display node details in the sidebar
                 showNodeDetails(d);
@@ -202,7 +238,6 @@ document.addEventListener('DOMContentLoaded', function() {
             d.fy = null;
         }
         
-        console.log("Node types:", nodes.map(n => ({ name: n.name, type: n.type })));
     }
     
     // Display node details in the sidebar

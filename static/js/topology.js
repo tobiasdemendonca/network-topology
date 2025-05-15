@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
     subnetPattern.append('rect')
         .attr('width', 100)
         .attr('height', 100)
-        .attr('fill', 'white');
+        .attr('fill', '#FCE5DE');
 
     // Add the image on top with centering offsets
     subnetPattern.append('image')
@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function initializeSimulation() {
         simulation = d3.forceSimulation(nodes)
             .force('link', d3.forceLink(links).id(d => d.id).distance(200))
-            // .force('charge', d3.forceManyBody().strength(-300))
+            .force('charge', d3.forceManyBody().strength(10))
             .force('center', d3.forceCenter(width / 2, height / 2))
             .force('collision', d3.forceCollide().radius(50))
             .on('tick', ticked);
@@ -137,7 +137,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const link = linksGroup.selectAll('.link')
             .data(links)
             .enter().append('line')
-            .attr('class', 'link')
+            .attr('class', d => {
+                return d.ip ? 'link' : 'link dashed';
+            })
             .on('mouseover', function(event, d) {
                 tooltip.transition()
                     .duration(200)
@@ -193,7 +195,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else if (d.type === 'node') {
                     tooltipText += `<br><br><strong>Interfaces</strong>`;
                     d.interfaces.forEach(intf => {
-                        tooltipText += `<br>${intf.name}: ${intf.ip}`;
+                        tooltipText += `<br>${intf.name}${intf.ip}`;
                     });
                 }
                 
@@ -202,16 +204,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     .style('top', (event.pageY - 28) + 'px');
                 
                 // Add styles
-                link
-                    .filter(link => link.source.id === d.id)
-                    .style("stroke-width", 3);
-
-                link
-                    .filter(link => link.source.id !== d.id)
-                    .style("stroke-width", 0.5);
-                
-                node.style("opacity", 0.5);
-                unfadeNeighbours(d);
+                highlightConnections(d);
             })
             .on('mouseout', function() {
                 tooltip.transition()
@@ -252,15 +245,34 @@ document.addEventListener('DOMContentLoaded', function() {
             d.fy = null;
         }
 
-        function unfadeNeighbours(current_node) {
-            const out_links = links.filter(l => l.source.id === current_node.id);
+        function highlightConnections(currentNode) {
+            // Lower the opacity of all nodes and edges
+            node.style("opacity", 0.3);
+            link.style("stroke-width", 0.5);
+            
 
-            out_links.forEach(l => {
-                node
-                    .filter(n => n.id === current_node.id || l.target.id === n.id)
-                    .style("opacity", 1.0);
+            const connectedNodeIds = new Set([currentNode.id]);
+            const connectedLinks = links.filter(l => 
+                (l.source.id === currentNode.id || l.target.id === currentNode.id)
+            );
+            
+            // Add all node IDs of the connected links to the connected set
+            connectedLinks.forEach(l => {
+                if (l.source.id === currentNode.id) {
+                    connectedNodeIds.add(l.target.id);
+                } else {
+                    connectedNodeIds.add(l.source.id);
+                }
             });
-        }
+            
+            // Highlight connected nodes and links
+            node.filter(n => connectedNodeIds.has(n.id))
+                .style("opacity", 1.0);
+            link.filter(l => 
+                l.source.id === currentNode.id || l.target.id === currentNode.id
+            )
+            .style("stroke-width", 2.5);
+}
         
     }
 

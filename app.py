@@ -111,7 +111,7 @@ def load_yaml():
             for subnet_cidr, ip_addr in zip(subnets, ips):
                 iface = NetworkInterface(
                     name="",
-                    ipaddress=ip_addr or "N/A",
+                    ipaddress=ip_addr if ip_addr != "None" else None,
                     subnet=subnets_dict[subnet_cidr],
                 )
                 interfaces.append(iface)

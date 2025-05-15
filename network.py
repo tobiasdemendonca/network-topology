@@ -4,7 +4,8 @@ import json
 
 
 class NetworkInterface: 
-    def __init__(self, name: str, ipaddress: str, subnet: Subnet) -> None: 
+
+    def __init__(self, name: str, ipaddress: str | None, subnet: Subnet) -> None:
         self.name = name
         self.ipaddress = ipaddress
         self.subnet = subnet

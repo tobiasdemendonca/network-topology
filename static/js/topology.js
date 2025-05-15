@@ -139,7 +139,6 @@ document.addEventListener('DOMContentLoaded', function() {
             .enter().append('line')
             .attr('class', 'link')
             .attr('marker-end', 'url(#arrowhead)')
-            .style("stroke", d => d.color)
             .on('mouseover', function(event, d) {
                 tooltip.transition()
                     .duration(200)

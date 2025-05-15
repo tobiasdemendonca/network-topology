@@ -3,22 +3,35 @@ from __future__ import annotations
 import yaml
 from pathlib import Path
 import mmap
+from ipaddress import IPv4Network, IPv4Address
+import argparse
 
 class Node:
-    def __init__(self, system_id: str, hostname: str, ip: str, subnet: Subnet) -> None:
+    def __init__(
+        self,
+        system_id: str,
+        hostname: str,
+        interfaces: set[NetworkInterface],
+    ) -> None:
         self.system_id = system_id
         self.hostname = hostname
-        self.ip = ip
-        self.subnet = subnet
+        self.interfaces = interfaces
     
     def to_mermaid(self) -> str:
         return f"{self.system_id}[Node_{self.system_id}<br>hostname={self.hostname}]"
     
     def __str__(self):
-        return f"Node(system_id={self.system_id}, hostname={self.hostname}, ip={self.ip}, subnet={self.subnet})"
+        output = f"Node(system_id={self.system_id}, hostname={self.hostname})\n"
+        for interface in self.interfaces:
+            output += f"\t{interface}\n"
+        return output
 
 class Subnet:
-    def __init__(self, id: int, cidr: str) -> None:
+    def __init__(
+        self,
+        id: int,
+        cidr: IPv4Network
+    ) -> None:
         self.id = id
         self.cidr = cidr
     
@@ -33,21 +46,31 @@ class Subnet:
     def __eq__(self, other: Subnet) -> bool:
         if not isinstance(other, Subnet):
             return False
-        return self.cidr == other.cidr
+        return self.id == other.id and self.cidr == other.cidr
 
     def __hash__(self) -> int:
-        return hash(self.cidr)
+        return hash(self.id)
 
-    def __ne__(self, value):
-        if not isinstance(value, Subnet):
+    def __ne__(self, other: Subnet) -> bool:
+        if not isinstance(other, Subnet):
             return True
-        return self.cidr != value.cidr
+        return self.id != other.id or self.cidr != other.cidr
 
 class NetworkInterface: 
-    def __init__(self, name: str, ipaddress: str, subnet: Subnet) -> None: 
+    def __init__(
+        self,
+        name: str,
+        ipaddress: IPv4Address | None,
+        subnet: Subnet,
+    ) -> None: 
         self.name = name
         self.ipaddress = ipaddress
         self.subnet = subnet
+
+    def to_mermaid(self) -> str:
+        if self.ipaddress is None:
+            return "DHCP lease expired"
+        return f"{self.name}: {self.ipaddress}"
         
     def __repr__(self) -> str:
         return f"NetworkInterface(name={self.name}, ipaddress={self.ipaddress}, subnet={self.subnet})"
@@ -56,24 +79,51 @@ class Network:
     def __init__(self, nodes: set[Node], subnets: set[Subnet]) -> None: 
         self.nodes = nodes
         self.subnets = subnets
+    
+    def __str__(self) -> str:
+        output = "Network:\n"
+        for node in self.nodes:
+            output += f"\t{node}\n"
+        for subnet in self.subnets:
+            output += f"\t{subnet}\n"
+        return output
         
     @classmethod
     def from_yaml(cls, yaml_file: Path) -> Network:
         known_subnets = set()
         nodes = set()
 
-        subnet_id = 0
+        new_subnet_id = 0
 
         with open(yaml_file, "r") as f:
             with mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as mm:
                 data = yaml.safe_load(mm.read())
                 for k in data:
-                    sn = Subnet(0, data[k]["subnet"])
-                    if sn not in known_subnets:
-                        sn.id = subnet_id
-                        subnet_id += 1
-                        known_subnets.add(sn)
-                    n = Node(k, data[k]["hostname"], data[k]["ip"], sn)
+                    for data_subnet in data[k]["subnets"]:
+                        subnet_exists = False
+                        for known_subnet in known_subnets:
+                            if IPv4Network(data_subnet) == known_subnet.cidr:
+                                subnet_exists = True
+                                break
+                        if not subnet_exists:
+                            sn = Subnet(new_subnet_id, IPv4Network(data_subnet))
+                            new_subnet_id += 1
+                            known_subnets.add(sn)
+
+                    node_interfaces = set()
+                    for idx, data_ip in enumerate(data[k]["ips"]):
+                        ip = None if data_ip == "None" else IPv4Address(data_ip)
+                        ni = NetworkInterface("", ip, None)
+                        sn_data = data[k]["subnets"][idx]
+
+                        for sn in known_subnets:
+                            if IPv4Network(sn_data) == sn.cidr:
+                                ni.subnet = sn
+                                break
+
+                        node_interfaces.add(ni)
+
+                    n = Node(k, data[k]["hostname"], node_interfaces)
                     nodes.add(n)
 
         # print("Subnets:")
@@ -106,24 +156,38 @@ class MermaidOutputter:
         for node in network.nodes:
             # TODO: Get network interface name
 
-            # TODO: Clean up getting a subnet
-            sn = None
-            for subnet in network.subnets:
-                if node.subnet == subnet:
-                    sn = subnet
-                    break
-            output += f"  {node.system_id} -->|{node.ip}| {sn.to_mermaid()}\n"
+            for interface in node.interfaces:
+                output += f"  {node.system_id} -->"
+                output += f"|{interface.to_mermaid()}|"
+                output += f" {interface.subnet.to_mermaid()}\n"
 
         return output
 
-def main():
+def create_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Generate a mermaid diagram from a network yaml file"
+    )
+    parser.add_argument(
+        "yaml_file",
+        type=Path,
+        help="The yaml file to read the network from"
+    )
+    return parser
+
+def main(yaml_file: Path) -> None:
+
     print(
         MermaidOutputter.construct_mermaid(
-            Network.from_yaml("example-network.yaml")
+            Network.from_yaml(yaml_file)
         )
     )
     
     
 if __name__ == "__main__":
-    main()
+    parser = create_parser()
+    args = parser.parse_args()
+    if args.yaml_file:
+        main(args.yaml_file)
+    else:
+        raise Exception("No yaml file provided")
     

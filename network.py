@@ -5,13 +5,14 @@ from pathlib import Path
 import mmap
 from ipaddress import IPv4Network, IPv4Address
 import argparse
+from typing import Set
 
 class Node:
     def __init__(
         self,
         system_id: str,
         hostname: str,
-        interfaces: set[NetworkInterface],
+        interfaces: Set[NetworkInterface],
     ) -> None:
         self.system_id = system_id
         self.hostname = hostname
@@ -43,7 +44,7 @@ class Subnet:
     def __str__(self):
         return f"Subnet_{self.id}(cidr={self.cidr})"
     
-    def __eq__(self, other: Subnet) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, Subnet):
             return False
         return self.id == other.id and self.cidr == other.cidr
@@ -51,7 +52,7 @@ class Subnet:
     def __hash__(self) -> int:
         return hash(self.id)
 
-    def __ne__(self, other: Subnet) -> bool:
+    def __ne__(self, other: object) -> bool:
         if not isinstance(other, Subnet):
             return True
         return self.id != other.id or self.cidr != other.cidr
@@ -76,7 +77,7 @@ class NetworkInterface:
         return f"NetworkInterface(name={self.name}, ipaddress={self.ipaddress}, subnet={self.subnet})"
 
 class Network:
-    def __init__(self, nodes: set[Node], subnets: set[Subnet]) -> None: 
+    def __init__(self, nodes: Set[Node], subnets: Set[Subnet]) -> None: 
         self.nodes = nodes
         self.subnets = subnets
     
@@ -90,8 +91,8 @@ class Network:
         
     @classmethod
     def from_yaml(cls, yaml_file: Path) -> Network:
-        known_subnets = set()
-        nodes = set()
+        known_subnets: Set[Subnet] = set()
+        nodes: Set[Node] = set()
 
         new_subnet_id = 0
 
@@ -111,28 +112,20 @@ class Network:
                             known_subnets.add(sn)
 
                     node_interfaces = set()
-                    for idx, data_ip in enumerate(data[k]["ips"]):
+                    for sn_data, data_ip in zip(data[k]["subnets"], data[k]["ips"]):
                         ip = None if data_ip == "None" else IPv4Address(data_ip)
-                        ni = NetworkInterface("", ip, None)
-                        sn_data = data[k]["subnets"][idx]
 
+                        sn_obj = Subnet(0, IPv4Network(""))
                         for sn in known_subnets:
                             if IPv4Network(sn_data) == sn.cidr:
-                                ni.subnet = sn
+                                sn_obj = sn
                                 break
+                        ni = NetworkInterface("", ip, sn_obj)
 
                         node_interfaces.add(ni)
 
                     n = Node(k, data[k]["hostname"], node_interfaces)
                     nodes.add(n)
-
-        # print("Subnets:")
-        # for sn in known_subnets:
-        #     print("\t", sn)
-        
-        # print("Nodes:")
-        # for n in nodes:
-        #     print("\t", n)
         
         return Network(nodes, known_subnets)
 
@@ -170,19 +163,18 @@ def create_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "yaml_file",
         type=Path,
-        help="The yaml file to read the network from"
+        help="The yaml file to read the network from",
+        required=True
     )
     return parser
 
 def main(yaml_file: Path) -> None:
-
     print(
         MermaidOutputter.construct_mermaid(
             Network.from_yaml(yaml_file)
         )
     )
-    
-    
+
 if __name__ == "__main__":
     parser = create_parser()
     args = parser.parse_args()
@@ -190,4 +182,3 @@ if __name__ == "__main__":
         main(args.yaml_file)
     else:
         raise Exception("No yaml file provided")
-    

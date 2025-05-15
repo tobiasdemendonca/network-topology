@@ -138,7 +138,6 @@ document.addEventListener('DOMContentLoaded', function() {
             .data(links)
             .enter().append('line')
             .attr('class', 'link')
-            .attr('marker-end', 'url(#arrowhead)')
             .on('mouseover', function(event, d) {
                 tooltip.transition()
                     .duration(200)

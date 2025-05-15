@@ -25,9 +25,10 @@ class Node:
         return f"Node(name={self.name}, interfaces={self.interfaces})"
 
 class Subnet: 
-    def __init__(self, name: str, cidr: str) -> None:
+    def __init__(self, name: str, cidr: str, subnet_id: int) -> None:
         self.name = name
         self.cidr = cidr
+        self.subnet_id = subnet_id
 
     @property
     def name_without_spaces(self) -> str:

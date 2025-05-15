@@ -8,6 +8,15 @@ from network import Network, NetworkInterface, Node, Subnet
 app = Flask(__name__)
 
 
+COLORS = [
+    "red",
+    "blue",
+    "orange",
+    "green",
+    "yellow",
+]
+
+
 @app.route("/")
 def index():
     """Render the main page with the network topology visualization."""
@@ -19,19 +28,19 @@ def get_topology():
     """API endpoint to get the topology data."""
     # For demonstration, we'll use the example network from network.py
     # In a real application, you might fetch this from a database or external service
-    subnet1 = Subnet(name="Subnet 1", cidr="192.168.1.0/24")
-    subnet2 = Subnet(name="Subnet 2", cidr="192.168.2.0/24")
-    subnet3 = Subnet(name="Subnet 3", cidr="192.168.3.0/24")
+    # subnet1 = Subnet(name="Subnet 1", cidr="192.168.1.0/24")
+    # subnet2 = Subnet(name="Subnet 2", cidr="192.168.2.0/24")
+    # subnet3 = Subnet(name="Subnet 3", cidr="192.168.3.0/24")
 
-    interface1 = NetworkInterface(name="eth0", ipaddress="192.168.1.10", subnet=subnet1)
-    interface2 = NetworkInterface(name="eth1", ipaddress="192.168.1.11", subnet=subnet1)
-    interface3 = NetworkInterface(name="eth2", ipaddress="192.168.2.10", subnet=subnet2)
-    interface4 = NetworkInterface(name="eth3", ipaddress="192.168.3.10", subnet=subnet3)
+    # interface1 = NetworkInterface(name="eth0", ipaddress="192.168.1.10", subnet=subnet1)
+    # interface2 = NetworkInterface(name="eth1", ipaddress="192.168.1.11", subnet=subnet1)
+    # interface3 = NetworkInterface(name="eth2", ipaddress="192.168.2.10", subnet=subnet2)
+    # interface4 = NetworkInterface(name="eth3", ipaddress="192.168.3.10", subnet=subnet3)
 
-    node1 = Node(name="Node 1", interfaces=[interface1, interface2, interface3])
-    node2 = Node(name="Node 2", interfaces=[interface4])
+    # node1 = Node(name="Node 1", interfaces=[interface1, interface2, interface3])
+    # node2 = Node(name="Node 2", interfaces=[interface4])
 
-    network = Network(nodes=[node1, node2], subnets=[subnet1, subnet2, subnet3])
+    network =  Network(nodes=[], subnets=[]) #Network(nodes=[node1, node2], subnets=[subnet1, subnet2, subnet3])
 
     # Convert to a format suitable for D3.js force-directed graph
     nodes = []
@@ -100,9 +109,11 @@ def load_yaml():
 
             for subnet_cidr, ip_address in zip(subnets, ips):
                 if subnet_cidr not in subnets_dict:
-                    subnet_name = f"Subnet {len(subnets_dict) + 1}"
+                    subnet_id = len(subnets_dict)
+                    subnet_name = f"Subnet {subnet_id + 1}"
                     subnets_dict[subnet_cidr] = Subnet(
-                        name=subnet_name, cidr=subnet_cidr
+                        name=subnet_name, cidr=subnet_cidr,
+                        subnet_id=subnet_id,
                     )
 
             interfaces = []
@@ -131,6 +142,8 @@ def load_yaml():
                     "cidr": subnet.cidr,
                     "type": "subnet",
                     "group": 1,
+                    "subnet_id": subnet.subnet_id,
+                    "fill_color": COLORS[subnet.subnet_id % len(COLORS)],
                 }
             )
 
@@ -159,6 +172,7 @@ def load_yaml():
                         "target": interface.subnet.name_without_spaces,
                         "interface": interface.name,
                         "ip": interface.ipaddress,
+                        "color": COLORS[interface.subnet.subnet_id % len(COLORS)],
                     }
                 )
 

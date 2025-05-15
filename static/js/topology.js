@@ -115,6 +115,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .enter().append('line')
             .attr('class', 'link')
             .attr('marker-end', 'url(#arrowhead)')
+            .style("stroke", d => d.color)
             .on('mouseover', function(event, d) {
                 tooltip.transition()
                     .duration(200)
@@ -138,6 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return `node ${nodeType}`;
             })
             .attr('r', 15)
+            .style("fill", d => d.fill_color)
             .on('click', function(event, d) {
                 // Display node details in the sidebar
                 showNodeDetails(d);

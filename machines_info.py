@@ -36,8 +36,9 @@ def main():
         subnets = set()
         for interface in machine["interface_set"]:
             for link in interface["links"]:
-                ips.add(link["ip_address"])
-                subnets.add(link["subnet"]["cidr"])
+                if "ip_address" in link:
+                    ips.add(link["ip_address"])
+                    subnets.add(link["subnet"]["cidr"])
         machine_dict = {
             "hostname": machine["hostname"],
             "ips": list(ips),

@@ -133,7 +133,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const node = nodesGroup.selectAll('.node')
             .data(nodes)
             .enter().append('circle')
-            .attr('class', d => `node ${d.type}`)
+            .attr('class', d => {
+                const nodeType = d.type === 'node' ? 'machine' : d.type;
+                return `node ${nodeType}`;
+            })
             .attr('r', 15)
             .on('click', function(event, d) {
                 // Display node details in the sidebar
@@ -196,6 +199,8 @@ document.addEventListener('DOMContentLoaded', function() {
             d.fx = null;
             d.fy = null;
         }
+        
+        console.log("Node types:", nodes.map(n => ({ name: n.name, type: n.type })));
     }
     
     // Display node details in the sidebar

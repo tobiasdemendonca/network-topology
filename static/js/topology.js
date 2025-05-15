@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function initializeSimulation() {
         simulation = d3.forceSimulation(nodes)
             .force('link', d3.forceLink(links).id(d => d.id).distance(200))
-            .force('charge', d3.forceManyBody().strength(-300))
+            // .force('charge', d3.forceManyBody().strength(-300))
             .force('center', d3.forceCenter(width / 2, height / 2))
             .force('collision', d3.forceCollide().radius(50))
             .on('tick', ticked);
@@ -166,11 +166,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 tooltip.html(tooltipText)
                     .style('left', (event.pageX + 10) + 'px')
                     .style('top', (event.pageY - 28) + 'px');
+                
+                // Add styles
+                link
+                    .filter(link => link.source.id === d.id)
+                    .style("stroke-width", 3);
+
+                link
+                    .filter(link => link.source.id !== d.id)
+                    .style("stroke-width", 0.5);
+                
+                node.style("opacity", 0.5);
+                unfadeNeighbours(d);
             })
             .on('mouseout', function() {
                 tooltip.transition()
                     .duration(500)
                     .style('opacity', 0);
+                
+                // Remove styles
+                link.style("stroke-width", 1);
+                node.style("opacity", 1)
             })
             .call(d3.drag()
                 .on('start', dragstarted)
@@ -201,9 +217,21 @@ document.addEventListener('DOMContentLoaded', function() {
             d.fx = null;
             d.fy = null;
         }
+
+        function unfadeNeighbours(current_node) {
+            const out_links = links.filter(l => l.source.id === current_node.id);
+
+            out_links.forEach(l => {
+                node
+                    .filter(n => n.id === current_node.id || l.target.id === n.id)
+                    .style("opacity", 1.0);
+            });
+        }
         
         console.log("Node types:", nodes.map(n => ({ name: n.name, type: n.type })));
     }
+
+    
     
     // Display node details in the sidebar
     function showNodeDetails(node) {

@@ -115,7 +115,7 @@ class Network:
                     for sn_data, data_ip in zip(data[k]["subnets"], data[k]["ips"]):
                         ip = None if data_ip == "None" else IPv4Address(data_ip)
 
-                        sn_obj = Subnet(0, IPv4Network(""))
+                        sn_obj = None
                         for sn in known_subnets:
                             if IPv4Network(sn_data) == sn.cidr:
                                 sn_obj = sn
@@ -163,8 +163,7 @@ def create_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "yaml_file",
         type=Path,
-        help="The yaml file to read the network from",
-        required=True
+        help="The yaml file to read the network from"
     )
     return parser
 

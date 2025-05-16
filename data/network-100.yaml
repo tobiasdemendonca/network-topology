@@ -964,10 +964,16 @@ ymbm8p:
   hostname: uurdsu00026
   ips: []
   subnets: []
-yq4nxd:
-  hostname: uurdsu00056
-  ips: []
-  subnets: []
+rqw3ae:
+  hostname: dzn01u00001
+  ips:
+  - None
+  - None
+  - None
+  subnets:
+  - 211.66.200.0/24
+  - 79.91.253.0/24
+  - 246.189.70.0/24
 yree78:
   hostname: uurdsu00069
   ips:

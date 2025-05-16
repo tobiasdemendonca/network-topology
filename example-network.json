@@ -1,0 +1,99 @@
+{
+  "nodes": [
+    {
+      "id": "Subnet_1",
+      "name": "Public Network",
+      "cidr": "203.0.113.0/24",
+      "type": "subnet",
+      "group": 1
+    },
+    {
+      "id": "Subnet_2",
+      "name": "Private Network",
+      "cidr": "192.168.10.0/24",
+      "type": "subnet",
+      "group": 1
+    },
+    {
+      "id": "Subnet_3",
+      "name": "Storage Network",
+      "cidr": "10.10.10.0/24",
+      "type": "subnet",
+      "group": 1
+    },
+    {
+      "id": "Node_1",
+      "name": "Web Server",
+      "type": "node",
+      "group": 2
+    },
+    {
+      "id": "Node_2",
+      "name": "Database Server",
+      "type": "node",
+      "group": 2
+    },
+    {
+      "id": "Node_3",
+      "name": "Load Balancer",
+      "type": "node",
+      "group": 2
+    },
+    {
+      "id": "Node_4",
+      "name": "File Server",
+      "type": "node",
+      "group": 2
+    }
+  ],
+  "links": [
+    {
+      "source": "Node_1",
+      "target": "Subnet_1",
+      "interface": "eth0",
+      "ip": "203.0.113.10"
+    },
+    {
+      "source": "Node_1",
+      "target": "Subnet_2",
+      "interface": "eth1",
+      "ip": "192.168.10.10"
+    },
+    {
+      "source": "Node_2",
+      "target": "Subnet_2",
+      "interface": "eth0",
+      "ip": "192.168.10.20"
+    },
+    {
+      "source": "Node_2",
+      "target": "Subnet_3",
+      "interface": "eth1",
+      "ip": "10.10.10.20"
+    },
+    {
+      "source": "Node_3",
+      "target": "Subnet_1",
+      "interface": "eth0",
+      "ip": "203.0.113.5"
+    },
+    {
+      "source": "Node_3",
+      "target": "Subnet_2",
+      "interface": "eth1",
+      "ip": "192.168.10.5"
+    },
+    {
+      "source": "Node_4",
+      "target": "Subnet_2",
+      "interface": "eth0",
+      "ip": "192.168.10.30"
+    },
+    {
+      "source": "Node_4",
+      "target": "Subnet_3",
+      "interface": "eth1",
+      "ip": "10.10.10.30"
+    }
+  ]
+} 

@@ -16,7 +16,6 @@ A web-based network topology visualization tool inspired by OpenStack Horizon's 
 ### Prerequisites
 
 - Python 3.6 or higher
-- pip (Python package installer)
 
 ### Installation
 
@@ -71,74 +70,7 @@ Click the "Load Demo Data" button to load a sample network topology for demonstr
 
 ## Data Format
 
-### YAML Format Example
-
-```yaml
-node1:
-  hostname: server1
-  ip: 192.168.1.10
-  subnet: 192.168.1.0/24
-node2:
-  hostname: server2
-  ip: 192.168.1.11
-  subnet: 192.168.1.0/24
-node3:
-  hostname: router1
-  ip: 192.168.2.1
-  subnet: 192.168.2.0/24
-```
-
-### JSON Format Example
-
-The JSON format should match the internal D3.js format:
-
-```json
-{
-  "nodes": [
-    {
-      "id": "Subnet_1",
-      "name": "Subnet 1",
-      "cidr": "192.168.1.0/24",
-      "type": "subnet",
-      "group": 1
-    },
-    {
-      "id": "Node_1",
-      "name": "Node 1",
-      "type": "node",
-      "group": 2
-    }
-  ],
-  "links": [
-    {
-      "source": "Node_1",
-      "target": "Subnet_1",
-      "interface": "eth0",
-      "ip": "192.168.1.10"
-    }
-  ]
-}
-```
-
-## Extending the Application
-
-You can extend the application by:
-
-1. Adding more node types (e.g., firewalls, load balancers)
-2. Supporting additional data formats
-3. Implementing additional visualization features
-4. Adding backend integration to fetch network data from external sources
-
-## Technology Stack
-
-- Backend: Flask (Python)
-- Frontend: HTML, CSS, JavaScript
-- Visualization: D3.js
-- Data Formats: JSON, YAML
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+The data format is currently not stable. Check [data/](./data/) for examples.
 
 ## Acknowledgments
 
